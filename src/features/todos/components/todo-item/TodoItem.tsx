@@ -3,8 +3,8 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-} from "@mui/material"; 
-import { DateTime } from "luxon"; 
+} from "@mui/material";
+import { DateTime } from "luxon";
 import { useAppDispatch } from "../../../../app/hooks";
 import { Todo } from "../../models/Todo.model";
 import { TodoStatus } from "../../models/TodoStatus.model";
@@ -14,7 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { deleteTodoItemAsync, updateTodoAsync } from "../../store/todosSlice";
 import { useState } from "react";
 
-const TodoItem: React.FC<{ todo: Todo }> = (props) => {  
+const TodoItem: React.FC<{ todo: Todo }> = (props) => {
   const labelId = `checkbox-list-secondary-label-${props.todo.id}`;
   const [editMode, setEditMode] = useState<boolean>(() => false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(() => null);
@@ -30,6 +30,17 @@ const TodoItem: React.FC<{ todo: Todo }> = (props) => {
       })
     );
   }
+
+  const handleRestoreClick = () => {
+    dispatch(
+      updateTodoAsync({
+        ...props.todo,
+        status: TodoStatus.active,
+        completedDate: undefined,
+      })
+    );
+    setAnchorEl(null);
+  };
 
   //edit task
   function doubleClickHanlder() {
@@ -84,8 +95,14 @@ const TodoItem: React.FC<{ todo: Todo }> = (props) => {
               primary={props.todo.description}
               secondary={
                 props.todo.status === TodoStatus.active
-                  ? `Creada ${DateTime.fromMillis(props.todo.createdDate).setLocale("es").toRelative()}`
-                  : `Completada ${DateTime.fromMillis(props.todo.completedDate??DateTime.now().toMillis()).setLocale("es").toRelative()}`
+                  ? `Creada ${DateTime.fromMillis(props.todo.createdDate)
+                      .setLocale("es")
+                      .toRelative()}`
+                  : `Completada ${DateTime.fromMillis(
+                      props.todo.completedDate ?? DateTime.now().toMillis()
+                    )
+                      .setLocale("es")
+                      .toRelative()}`
               }
             />
           </ListItemButton>
@@ -113,6 +130,11 @@ const TodoItem: React.FC<{ todo: Todo }> = (props) => {
         }}
       >
         <MenuItem onClick={handleDeleteClick}>Borrar Tarea</MenuItem>
+        {props.todo.status === TodoStatus.completed && (
+          <MenuItem onClick={handleRestoreClick}>
+            Mover a tareas pendientes
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
